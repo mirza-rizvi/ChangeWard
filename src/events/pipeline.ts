@@ -187,6 +187,13 @@ export async function commitState<T extends { stateLost?: boolean }>(store: Stor
 
 /** Persist events and touched incidents within the remaining budget, events first. */
 export async function persistOutcome(store: Store, outcome: Outcome, reserve = 0): Promise<void> {
+	if (outcome.stateLost) {
+		// The incident IDs came from an unsaved sequence; writing them could overwrite a later
+		// incident with the same ID. Keep the events, drop the links.
+		for (const e of outcome.events) delete e.incidentId;
+		await store.putEvents(outcome.events);
+		return;
+	}
 	await store.putEvents(outcome.events);
 	for (const { incident, isNew } of outcome.incidents) {
 		if (!store.budget.has(1 + reserve)) break;

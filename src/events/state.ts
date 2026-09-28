@@ -66,7 +66,7 @@ export function parseState(raw: unknown): ActivityState {
 	const s = emptyState();
 	if (!isRecord(raw) || raw.v !== 1) return s;
 	if (Array.isArray(raw.ring)) s.ring = raw.ring.filter((e): e is RingEntry => isRecord(e) && typeof e.t === "number" && typeof e.o === "string" && typeof e.a === "string");
-	if (Array.isArray(raw.incidents)) s.incidents = raw.incidents.filter((i): i is Incident => isRecord(i) && typeof i.id === "string" && Array.isArray(i.resourceKeys));
+	if (Array.isArray(raw.incidents)) s.incidents = raw.incidents.filter(isRecord).map(normalizeIncident).filter((i): i is Incident => i !== undefined);
 	if (isRecord(raw.observed)) for (const [k, v] of Object.entries(raw.observed)) if (typeof v === "number") s.observed[k] = v;
 	if (isRecord(raw.bulk)) for (const [k, v] of Object.entries(raw.bulk)) if (typeof v === "number") s.bulk[k] = v;
 	if (isRecord(raw.alerts)) {
@@ -75,6 +75,20 @@ export function parseState(raw: unknown): ActivityState {
 	}
 	if (typeof raw.seq === "number" && Number.isSafeInteger(raw.seq)) s.seq = raw.seq;
 	return s;
+}
+
+const INCIDENT_ARRAYS = ["originSources", "actorIds", "pluginIds", "resourceKeys", "resourceLabels", "protectedResourceKeys", "domains", "reasons", "originKeys", "highProtectedKeys"] as const;
+
+/** Cached incidents from older versions or corrupted state get every list field defaulted. */
+function normalizeIncident(raw: Record<string, unknown>): Incident | undefined {
+	if (typeof raw.id !== "string" || typeof raw.lastEventAt !== "string") return undefined;
+	const i = { ...raw } as Record<string, unknown>;
+	for (const k of INCIDENT_ARRAYS) if (!Array.isArray(i[k])) i[k] = [];
+	if (typeof i.eventCount !== "number") i.eventCount = 0;
+	if (typeof i.highEventCount !== "number") i.highEventCount = 0;
+	if (typeof i.severity !== "string") i.severity = "info";
+	if (typeof i.status !== "string") i.status = "open";
+	return i as unknown as Incident;
 }
 
 /** Drop expired and excess entries so the record stays bounded. */

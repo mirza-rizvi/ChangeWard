@@ -17,6 +17,8 @@ export interface Extraction {
 	embedBlocks: string[];
 	/** Top-level string fields that hold a single URL (CTA, download link…), field → href. */
 	urlFields: Record<string, string>;
+	/** External hosts seen after the reference cap was reached (still checked against lists). */
+	overflowHosts: string[];
 	partial: boolean;
 }
 
@@ -33,8 +35,21 @@ const URL_KEYS: Record<string, RefKind> = {
 
 const URLISH_RE = /^\s*(?:https?:|\/\/|javascript:|data:|vbscript:|mailto:|tel:)/i;
 const TEXT_URL_RE = /\bhttps?:\/\/[^\s<>"'`)\]}]+/gi;
-const TAG_RE = /<\s*(script|iframe|embed|object|form|a|img|link|source|video|audio|frame|base)\b([^>]*)>/gi;
-const ATTR_RE = /\b(src|href|action|data|formaction|poster)\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi;
+// Attribute text may contain ">" inside quotes, so quoted values are consumed as units.
+const TAG_RE = /<\s*(script|iframe|embed|object|form|a|area|img|link|source|video|audio|frame|base|button|input|meta|use|image)\b((?:[^>"']|"[^"]*"|'[^']*')*)>/gi;
+const ATTR_RE = /(?:^|[\s"'/])((?:xlink:)?href|src|srcset|action|data|formaction|poster|content)\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi;
+const NAMED_ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", colon: ":", sol: "/", period: ".", tab: "\t", newline: "\n", lpar: "(", rpar: ")", comma: ",", num: "#", quest: "?", equals: "=" };
+
+/** Decode character references the way a browser does before it resolves an attribute URL. */
+export function decodeEntities(value: string): string {
+	return value.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);?/gi, (m, ref: string) => {
+		if (ref[0] === "#") {
+			const code = ref[1] === "x" || ref[1] === "X" ? Number.parseInt(ref.slice(2), 16) : Number.parseInt(ref.slice(1), 10);
+			return Number.isFinite(code) && code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : m;
+		}
+		return NAMED_ENTITIES[ref.toLowerCase()] ?? m;
+	});
+}
 const HANDLER_TAG_RE = /<[a-z][a-z0-9-]*\b[^>]*?\son[a-z]{3,20}\s*=/gi;
 const EMBED_TYPE_RE = /embed|iframe|script|html|widget|object/i;
 
@@ -45,7 +60,13 @@ const TAG_KIND: Record<string, RefKind> = {
 	embed: "object",
 	object: "object",
 	form: "form",
+	button: "form",
+	input: "form",
 	a: "link",
+	area: "link",
+	meta: "link",
+	use: "object",
+	image: "image",
 	img: "image",
 	link: "stylesheet",
 	source: "media",
@@ -61,6 +82,7 @@ class Collector {
 		inlineHandlers: 0,
 		embedBlocks: [],
 		urlFields: {},
+		overflowHosts: [],
 		partial: false,
 	};
 	private readonly seen = new Set<string>();
@@ -70,11 +92,13 @@ class Collector {
 	constructor(private readonly siteHost?: string) {}
 
 	add(raw: string, kind: RefKind): void {
+		const normalized = normalizeUrl(raw, this.siteHost);
 		if (this.result.refs.length >= LIMITS.refs) {
 			this.result.partial = true;
+			const overflow = this.result.overflowHosts;
+			if (normalized?.external && normalized.host && overflow.length < 2000 && !overflow.includes(normalized.host)) overflow.push(normalized.host);
 			return;
 		}
-		const normalized = normalizeUrl(raw, this.siteHost);
 		if (!normalized || normalized.scheme === "relative" || normalized.scheme === "mailto" || normalized.scheme === "tel" || normalized.scheme === "other") {
 			return;
 		}
@@ -119,10 +143,23 @@ class Collector {
 			const kind = TAG_KIND[name] ?? "link";
 			let hasSrc = false;
 			for (const attr of attrs.matchAll(ATTR_RE)) {
-				const rawValue = (attr[2] ?? "").replace(/^["']|["']$/g, "");
+				const rawValue = decodeEntities((attr[2] ?? "").replace(/^["']|["']$/g, ""));
 				if (!rawValue) continue;
-				hasSrc = true;
 				const attrName = (attr[1] ?? "").toLowerCase();
+				if (attrName === "content") {
+					// <meta http-equiv="refresh" content="0; url=...">
+					const refresh = /url\s*=\s*['"]?([^'";\s]+)/i.exec(rawValue);
+					if (name === "meta" && refresh?.[1]) this.add(refresh[1], "link");
+					continue;
+				}
+				hasSrc = true;
+				if (attrName === "srcset") {
+					for (const candidate of rawValue.split(",")) {
+						const u = candidate.trim().split(/\s+/)[0];
+						if (u) this.add(u, kind);
+					}
+					continue;
+				}
 				this.add(rawValue, attrName === "formaction" ? "form" : kind);
 			}
 			if (name === "script" && !hasSrc) this.result.inlineScripts += 1;
@@ -180,8 +217,9 @@ export function refKey(ref: Ref): string {
 }
 
 /** Hosts of external http(s) references. */
-export function externalHosts(extraction: Pick<Extraction, "refs">): string[] {
+export function externalHosts(extraction: Pick<Extraction, "refs"> & { overflowHosts?: string[] }): string[] {
 	const hosts = new Set<string>();
 	for (const ref of extraction.refs) if (ref.external && ref.host) hosts.add(ref.host);
+	for (const host of extraction.overflowHosts ?? []) hosts.add(host);
 	return [...hosts];
 }

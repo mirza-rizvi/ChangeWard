@@ -193,6 +193,14 @@ describe("policies and settings (concurrency-safe)", () => {
 		expect(actions).toEqual(expect.arrayContaining(["protection.added", "protection.removed"]));
 	});
 
+	it("refuses to grow a full domain list instead of silently dropping entries", async () => {
+		const full = Array.from({ length: 200 }, (_, i) => `d${i}.example`);
+		await host.settings.set("config", { ...defaultConfig(), blockedDomains: full });
+		const res = await call({ type: "block_action", action_id: "policies:domain", value: "block|new.example" });
+		expect(res.res.toast?.type).toBe("error");
+		expect(normalizeConfig(await host.settings.get("config")).blockedDomains).toHaveLength(200);
+	});
+
 	it("classifies an observed domain from the table", async () => {
 		await call({ type: "block_action", action_id: "policies:domain", value: "trust|Vendor.Example" });
 		expect(normalizeConfig(await host.settings.get("config")).trustedDomains).toEqual(["vendor.example"]);

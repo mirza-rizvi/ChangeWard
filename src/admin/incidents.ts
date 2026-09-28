@@ -145,6 +145,6 @@ export async function changeIncidentStatus(store: Store, id: string, to: Inciden
 			else cached.status = to;
 		}
 		return {};
-	}, false);
+	});
 	return incidentDetail(store, id, { type: "success", message: `${id} marked ${to}.` });
 }

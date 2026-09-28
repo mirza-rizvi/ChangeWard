@@ -96,9 +96,10 @@ export async function scanRedirects(store: Store, now = Date.now()): Promise<{ c
 				},
 				false,
 			);
+			if (outcome.stateLost) for (const e of outcome.events) delete e.incidentId;
 			await store.putEvents(outcome.events);
 			await store.kvSet(REDIRECT_SNAPSHOT_KEY, next);
-			await persistOutcome(store, { events: [], incidents: outcome.incidents });
+			if (!outcome.stateLost) await persistOutcome(store, { events: [], incidents: outcome.incidents });
 			return { changes: changes.length, partial };
 		}
 	}

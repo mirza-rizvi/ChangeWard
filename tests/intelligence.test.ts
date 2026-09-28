@@ -107,6 +107,41 @@ describe("extraction", () => {
 	});
 });
 
+describe("evasion resistance (review regressions)", () => {
+	const blocked = { ...opts, blocked: ["evil.example"] };
+	const hit = (data: Record<string, unknown>) => classifyChange(null, extract(data, SITE), blocked).signals.map((s) => s.code);
+	it("matches blocked domains written with a trailing dot", () => {
+		expect(hit({ a: "https://evil.example./x" })).toContain("domain.blocked");
+	});
+	it("decodes HTML character references in attributes", () => {
+		expect(hit({ h: '<a href="&#104;ttps://evil.example/">x</a>' })).toContain("domain.blocked");
+		expect(hit({ h: '<a href="jav&#x61;script&colon;alert(1)">x</a>' })).toContain("url.javascript");
+	});
+	it("handles '>' inside quoted attribute values", () => {
+		expect(hit({ h: '<a title=">" href="https://evil.example/">x</a>' })).toContain("domain.blocked");
+	});
+	it("covers srcset, meta refresh, area, button formaction and svg use", () => {
+		expect(hit({ h: '<img srcset="https://ok.example/a.png 1x, https://evil.example/b.png 2x">' })).toContain("domain.blocked");
+		expect(hit({ h: '<meta http-equiv="refresh" content="0; url=https://evil.example/">' })).toContain("domain.blocked");
+		expect(hit({ h: '<area href="https://evil.example/">' })).toContain("domain.blocked");
+		expect(hit({ h: '<button formaction="https://evil.example/post">' })).toContain("domain.blocked");
+		expect(hit({ h: '<svg><use xlink:href="https://evil.example/s.svg#i"/></svg>' })).toContain("domain.blocked");
+	});
+	it("still sees blocked hosts after the reference cap", () => {
+		const padding = Array.from({ length: 350 }, (_, i) => `https://pad${i}.example/`).join(" ");
+		const a = classifyChange(null, extract({ body: `${padding} https://evil.example/`, }, SITE), blocked);
+		expect(a.partial).toBe(true);
+		expect(a.hosts).toContain("evil.example");
+	});
+	it("scans long strings in full up to the total budget", () => {
+		expect(hit({ body: `${"x ".repeat(60_000)} https://evil.example/` })).toContain("domain.blocked");
+	});
+	it("stores URLs without credentials, query strings or fragments", () => {
+		const x = extract({ a: "https://user:secret@pay.example/checkout?token=abc#frag" }, SITE);
+		expect(x.refs[0]?.href).toBe("https://pay.example/checkout");
+	});
+});
+
 describe("change intelligence", () => {
 	it("reports a new domain as an observation, never as malware", () => {
 		const before = snapshotOf(extract({ cta: "https://example.com/buy" }, SITE));

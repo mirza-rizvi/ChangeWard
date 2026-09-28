@@ -64,6 +64,11 @@ export function evaluatePolicies(input: PolicyInput): PolicyDecision {
 		const blocked = analysis.hosts.filter((h) => matchesAny(h, config.blockedDomains));
 		if (blocked.length) add("blocked-domain", `${verb} ${subject} would put the blocked domain ${list(blocked)} live.`);
 
+		if (analysis.partial && (input.protectedResource || config.blockedDomains.length > 0)) {
+			// Never silently pass what could not be read: content beyond the analysis limits is flagged.
+			outcomes.push({ rule: "analysis-partial", result: "warn", reason: `${verb} ${subject}: the content exceeds ChangeWard's analysis limits, so some links could not be checked. Review it manually.` });
+		}
+
 		const dangerous = details(analysis, new Set<SignalCode>(["url.javascript", "url.data"]));
 		if (dangerous.length) add("dangerous-scheme", `${verb} ${subject} would introduce a dangerous URL scheme (${list(dangerous)}).`);
 

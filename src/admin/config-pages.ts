@@ -6,6 +6,7 @@ import {
 	type Config,
 	type PolicyRuleId,
 } from "../core/config";
+import { LIMITS } from "../core/limits";
 import type { Store } from "../core/store";
 import { POLICY_ACTIONS, SEVERITIES } from "../core/types";
 import { bool, boundedInt, email, oneOf } from "../core/validate";
@@ -150,6 +151,12 @@ export async function savePolicies(store: Store, values: Record<string, unknown>
 		next[key] = normalizeDomainList(entries);
 	}
 	if (invalid.length) return policiesPage(store, { type: "error", message: `Not a valid domain: ${invalid.slice(0, 3).join(", ")}. Nothing was saved.` });
+	for (const field of ["trusted", "blocked"] as const) {
+		const raw = typeof values[field] === "string" ? (values[field] as string) : "";
+		if (new Set(raw.split(/[\s,]+/).filter(Boolean).map((e) => normalizeDomainEntry(e))).size > LIMITS.domainListEntries) {
+			return policiesPage(store, { type: "error", message: `Each domain list holds at most ${LIMITS.domainListEntries} entries. Nothing was saved.` });
+		}
+	}
 	if (!(await store.saveConfig(next, expected))) return policiesPage(store, STALE);
 	await audit(store, config, next, userId);
 	return policiesPage(store, { type: "success", message: "Policies saved." });
@@ -161,6 +168,9 @@ export async function classifyDomain(store: Store, op: string, hostRaw: string, 
 	if (!host || (op !== "trust" && op !== "block")) return policiesPage(store, { type: "error", message: "Invalid domain." });
 	const { config, revision } = await store.configVersioned();
 	const add = op === "trust" ? "trustedDomains" : "blockedDomains";
+	if (!config[add].includes(host) && config[add].length >= LIMITS.domainListEntries) {
+		return policiesPage(store, { type: "error", message: `The ${op === "trust" ? "trusted" : "blocked"} list is full (${LIMITS.domainListEntries} entries). Remove an entry first.` });
+	}
 	const remove = op === "trust" ? "blockedDomains" : "trustedDomains";
 	const next: Config = { ...config, [add]: normalizeDomainList([...config[add], host]), [remove]: config[remove].filter((d) => d !== host) };
 	if (!(await store.saveConfig(next, revision))) return policiesPage(store, STALE);

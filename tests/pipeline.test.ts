@@ -105,10 +105,20 @@ describe("change recording", () => {
 		expect(parseState(await host.kv.get("state")).ring).toHaveLength(1);
 	});
 
-	it("still writes the event when state cannot be committed twice", async () => {
+	it("still writes the event when state cannot be committed twice, without orphan incidents", async () => {
+		await protect("pages", "p1", "Pricing");
 		host.kv.failNextCas = 2;
-		await save("p1", { title: "A" }, "api", T0, true);
+		await save("p1", { title: "A" }, "mcp", T0);
 		expect(events()).toHaveLength(1);
+		expect(events()[0]?.incidentId).toBeUndefined();
+		expect(incidents()).toHaveLength(0);
+	});
+
+	it("tolerates cached incidents stored in an older shape", async () => {
+		await host.kv.set("state", { v: 1, ring: [], incidents: [{ id: "CW-9", lastEventAt: new Date(T0).toISOString(), resourceKeys: ["pages:p1"], status: "open", severity: "medium" }], observed: {}, bulk: {}, alerts: { pending: [] }, seq: 1000 });
+		await protect("pages", "p1", "Pricing");
+		await save("p1", { title: "A" }, "mcp", T0 + 1000);
+		expect(events()[0]?.incidentId).toBe("CW-9");
 	});
 
 	it("a deferred after-hook cannot undo protection added while it ran (regression)", async () => {
@@ -142,6 +152,16 @@ describe("publication policy hook", () => {
 		expect(d.reason).toMatch(/^ChangeWard: Publishing protected resource "Pricing" via MCP/);
 		expect(events()[0]).toMatchObject({ category: "policy", action: "policy.block", originSource: "mcp", severity: "high", protectedResource: true });
 		expect(events()[0]?.policy?.[0]).toMatchObject({ rule: "protected-origin-mcp", result: "block" });
+	});
+
+	it("a BLOCK survives a storage failure while recording (review regression)", async () => {
+		await setConfig({ blockedDomains: ["evil.example"] });
+		host.kv.compareAndSet = async () => {
+			throw new Error("D1 unavailable");
+		};
+		const d = await decidePublication(new Store(host), "publish", { content: item("p9", { title: "Post", a: "https://evil.example" }), collection: "pages", origin: { source: "api" } }, T0);
+		expect(d.result).toBe("block");
+		expect(host.logs.join(" ")).toContain("could not record a policy decision");
 	});
 
 	it("visual-editor publish is allowed; the after-hook inherits the origin", async () => {

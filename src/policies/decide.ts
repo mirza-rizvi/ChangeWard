@@ -40,51 +40,55 @@ export async function decidePublication(store: Store, kind: PolicyActionKind, ev
 	const slug = typeof content.slug === "string" ? content.slug.slice(0, LIMITS.slugChars) : undefined;
 	const label = displayLabel(resource, title, slug, key);
 
-	const outcome = await commitState(store, (state) => {
-		let analysis;
-		if (kind !== "unpublish" && isRecord(content.data)) {
-			const before = isRecord(content.liveData) ? snapshotOf(extract(content.liveData, siteHost)) : null;
-			analysis = classifyChange(before, extract(content.data, siteHost), {
-				trusted: config.trustedDomains,
-				blocked: config.blockedDomains,
-				observed: new Set(Object.keys(state.observed)),
-			});
-		}
-		const decision = evaluatePolicies({ action: kind, attribution, protectedResource: isProtected, label, ...(analysis ? { analysis } : {}), config });
-		const pending = { action: kind, ...attribution };
-		delete (pending as { inherited?: boolean }).inherited;
-		const signals: Signal[] = [];
-		if (decision.result !== "allow") {
-			signals.push({ code: decision.result === "block" ? "policy.block" : "policy.warn", detail: decision.outcomes.map((o) => o.rule).join(", ") });
-			for (const s of analysis?.signals ?? []) if (s.code !== "domain.trusted" && s.code !== "domain.observed") signals.push(s);
-		}
-		const blocked = decision.result === "block";
-		const draft: DraftEvent = {
-			category: "policy",
-			action: blocked ? "policy.block" : "policy.warn",
-			actionClass: "policy",
-			summary: blocked
-				? `Request to ${VERB[kind]} "${label}" ${viaPhrase(attribution)} was blocked by policy`
-				: `Policy warning: ${VERB[kind]} "${label}" ${viaPhrase(attribution)}${decision.downgraded ? " (monitor mode)" : ""}`,
-			attribution,
-			signals,
-			protectedResource: isProtected,
-			collection,
-			resourceId: id,
-			...(title ? { resourceTitle: title } : {}),
-			...(slug ? { resourceSlug: slug } : {}),
-			domains: analysis?.introducedDomains.map((d) => d.host) ?? [],
-			policy: decision.outcomes,
-			severity: blocked ? (isProtected ? "high" : "medium") : isProtected ? "medium" : "low",
-			trigger: decision.outcomes[0]?.reason ?? "Publication policy",
-			pendingAttribution: pending,
-			// An allowed transition only leaves an attribution marker for the after-hook.
-			ephemeral: decision.result === "allow",
-			...(analysis?.partial ? { partial: true } : {}),
-		};
-		return { ...applyToState(state, draft, config, now), decision };
-	});
+	// The decision depends only on config, the resource and the event. It is computed before any
+	// state I/O so a storage failure while recording can never discard a BLOCK.
+	let analysis;
+	if (kind !== "unpublish" && isRecord(content.data)) {
+		const before = isRecord(content.liveData) ? snapshotOf(extract(content.liveData, siteHost)) : null;
+		analysis = classifyChange(before, extract(content.data, siteHost), {
+			trusted: config.trustedDomains,
+			blocked: config.blockedDomains,
+			observed: new Set<string>(),
+		});
+	}
+	const decision = evaluatePolicies({ action: kind, attribution, protectedResource: isProtected, label, ...(analysis ? { analysis } : {}), config });
+	const pending = { action: kind, ...attribution };
+	delete (pending as { inherited?: boolean }).inherited;
+	const signals: Signal[] = [];
+	if (decision.result !== "allow") {
+		signals.push({ code: decision.result === "block" ? "policy.block" : "policy.warn", detail: decision.outcomes.map((o) => o.rule).join(", ") });
+		for (const s of analysis?.signals ?? []) if (s.code !== "domain.trusted" && s.code !== "domain.observed") signals.push(s);
+	}
+	const blocked = decision.result === "block";
+	const draft: DraftEvent = {
+		category: "policy",
+		action: blocked ? "policy.block" : "policy.warn",
+		actionClass: "policy",
+		summary: blocked
+			? `Request to ${VERB[kind]} "${label}" ${viaPhrase(attribution)} was blocked by policy`
+			: `Policy warning: ${VERB[kind]} "${label}" ${viaPhrase(attribution)}${decision.downgraded ? " (monitor mode)" : ""}`,
+		attribution,
+		signals,
+		protectedResource: isProtected,
+		collection,
+		resourceId: id,
+		...(title ? { resourceTitle: title } : {}),
+		...(slug ? { resourceSlug: slug } : {}),
+		domains: analysis?.introducedDomains.map((d) => d.host) ?? [],
+		policy: decision.outcomes,
+		severity: blocked ? (isProtected ? "high" : "medium") : isProtected ? "medium" : "low",
+		trigger: decision.outcomes[0]?.reason ?? "Publication policy",
+		pendingAttribution: pending,
+		// An allowed transition only leaves an attribution marker for the after-hook.
+		ephemeral: decision.result === "allow",
+		...(analysis?.partial ? { partial: true } : {}),
+	};
 
-	await persistOutcome(store, outcome);
-	return outcome.decision;
+	try {
+		const outcome = await commitState(store, (state) => applyToState(state, draft, config, now));
+		await persistOutcome(store, outcome);
+	} catch (error) {
+		store.host.log.warn("ChangeWard could not record a policy decision", { error: error instanceof Error ? error.name : "unknown" });
+	}
+	return decision;
 }

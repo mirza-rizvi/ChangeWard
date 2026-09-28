@@ -82,12 +82,17 @@ export function normalizeUrl(raw: string, siteHost?: string): NormalizedUrl | un
 	if (scheme !== "http" && scheme !== "https") {
 		return { href: `${scheme}:`, scheme, external: false, ipLiteral: false, punycode: false };
 	}
-	const host = url.hostname;
+	// A fully qualified name with a trailing dot is the same host; lists never contain the dot.
+	const host = url.hostname.endsWith(".") ? url.hostname.replace(/\.+$/, "") : url.hostname;
 	if (!host) return undefined;
 	const external = !siteHost || !sameSite(host, siteHost);
+	// Data minimization: never keep credentials, query strings or fragments.
+	url.username = "";
+	url.password = "";
+	url.search = "";
 	url.hash = "";
 	return {
-		href: url.href,
+		href: `${url.protocol}//${host}${url.port ? `:${url.port}` : ""}${url.pathname}`.slice(0, 300),
 		scheme,
 		host,
 		external,

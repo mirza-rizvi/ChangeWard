@@ -125,6 +125,13 @@ describe("publication policies", () => {
 		const c = cfg({ rules: { ...defaultConfig().rules, "protected-origin-mcp": "block" } });
 		expect(evaluatePolicies({ action: "publish", attribution: { source: "scheduler" }, protectedResource: true, label: "Pricing", analysis: analysis({}, {}, c), config: c }).result).toBe("allow");
 	});
+	it("partial analysis on protected content is flagged, never silently allowed", () => {
+		const c = cfg();
+		const body = Array.from({ length: 400 }, (_, i) => `https://l${i}.example/`).join(" ");
+		const d = evaluatePolicies({ action: "publish", attribution: editor, protectedResource: true, label: "Docs", analysis: { ...analysis({}, { body }, c) }, config: { ...c, rules: { ...c.rules, "protected-unknown-domain": "allow" } } });
+		expect(d.outcomes.map((o) => o.rule)).toContain("analysis-partial");
+		expect(d.result).toBe("warn");
+	});
 	it("clamps reasons to EmDash's 500-character plain-text limit", () => {
 		const r = clampReason(`a\nb${"x".repeat(900)}`);
 		expect(r.length).toBe(500);

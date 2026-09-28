@@ -11,8 +11,8 @@ export const LIMITS = {
 	walkDepth: 32,
 	/** Total string characters scanned for URLs and markup. */
 	scanChars: 200_000,
-	/** A single string longer than this is scanned only up to the limit. */
-	stringChars: 50_000,
+	/** A single string is scanned in full up to the total scan budget. */
+	stringChars: 200_000,
 	refs: 300,
 	storedRefs: 150,
 	urlFields: 20,
