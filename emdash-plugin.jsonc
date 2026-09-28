@@ -2,19 +2,64 @@
 	"$schema": "./node_modules/@emdash-cms/plugin-cli/schemas/emdash-plugin.schema.json",
 
 	"slug": "changeward",
+	// PLACEHOLDER: replace with your real Atmosphere DID or handle before publishing.
 	"publisher": "did:plc:aaaaaaaaaaaaaaaaaaaaaaaa",
 
 	"license": "MIT",
 	"author": { "name": "Rizvi", "url": "https://github.com/mirza-rizvi" },
+	// PLACEHOLDER: replace with your real security contact before publishing.
 	"security": { "email": "security@example.invalid" },
 	"description": "Change intelligence, protected-content monitoring, publishing policies, and MCP activity visibility for EmDash.",
 
-	// Trust contract — what runtime APIs the plugin asks for.
-	// Empty arrays mean no extra privileges beyond logging,
-	// KV, and route/hook registration. Changing these between
-	// releases requires a version bump because installed
-	// users have consented to the old contract.
-	"capabilities": ["content:read", "content:revisions:read", "hooks.content-policy:register", "media:read", "redirects:read"],
+	// Trust contract. Every entry is justified in docs/CAPABILITIES.md.
+	// Adding a capability in a later release requires administrators to approve it again.
+	"capabilities": [
+		"content:read",
+		"hooks.content-policy:register",
+		"redirects:read",
+		"media:read",
+		"email:send"
+	],
+	// No outbound network access at all.
 	"allowedHosts": [],
-	"storage": {}
+
+	// Every index backs a query in src/admin or src/cron (see docs/DATA_MODEL.md).
+	"storage": {
+		"events": {
+			"indexes": [
+				"createdAt",
+				["originSource", "createdAt"],
+				["category", "createdAt"],
+				["action", "createdAt"],
+				["severity", "createdAt"],
+				["protectedResource", "createdAt"],
+				["resourceKey", "createdAt"],
+				["incidentId", "createdAt"]
+			]
+		},
+		"incidents": {
+			"indexes": ["updatedAt", ["status", "updatedAt"]]
+		},
+		"resources": {
+			"indexes": ["lastSeenAt", ["isProtected", "protectedAt"]]
+		}
+	},
+
+	"admin": {
+		"pages": [
+			{ "path": "/overview", "label": "Overview", "icon": "shield" },
+			{ "path": "/activity", "label": "Activity", "icon": "list" },
+			{ "path": "/incidents", "label": "Incidents", "icon": "alert" },
+			{ "path": "/protected", "label": "Protected", "icon": "lock" },
+			{ "path": "/policies", "label": "Policies", "icon": "check" },
+			{ "path": "/settings", "label": "Settings", "icon": "settings" }
+		],
+		"widgets": [
+			{ "id": "status", "title": "ChangeWard status", "size": "half" },
+			{ "id": "incidents", "title": "Open incidents", "size": "half" }
+		],
+		"editorPanels": [
+			{ "id": "history", "title": "ChangeWard", "route": "editor/panel" }
+		]
+	}
 }

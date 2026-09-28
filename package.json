@@ -1,6 +1,20 @@
 {
 	"name": "changeward",
 	"version": "0.1.0",
+	"description": "Know what changed, who changed it, and how it happened. Change monitoring and publishing protection for EmDash.",
+	"license": "MIT",
+	"author": "Rizvi",
+	"keywords": [
+		"emdash",
+		"emdash-plugin",
+		"change monitoring",
+		"audit log",
+		"activity log",
+		"MCP",
+		"content integrity",
+		"publishing policies",
+		"protected content"
+	],
 	"private": true,
 	"type": "module",
 	"packageManager": "pnpm@11.7.0",
@@ -31,6 +45,7 @@
 		"emdash": ">=1.0.0"
 	},
 	"devDependencies": {
+		"@emdash-cms/blocks": "1.0.1",
 		"@emdash-cms/plugin-cli": "0.13.1",
 		"@emdash-cms/plugin-test": "0.2.6",
 		"emdash": "1.0.1",
