@@ -1,0 +1,20 @@
+{
+	"$schema": "./node_modules/@emdash-cms/plugin-cli/schemas/emdash-plugin.schema.json",
+
+	"slug": "changeward",
+	"publisher": "did:plc:aaaaaaaaaaaaaaaaaaaaaaaa",
+
+	"license": "MIT",
+	"author": { "name": "Rizvi", "url": "https://github.com/mirza-rizvi" },
+	"security": { "email": "security@example.invalid" },
+	"description": "Change intelligence, protected-content monitoring, publishing policies, and MCP activity visibility for EmDash.",
+
+	// Trust contract — what runtime APIs the plugin asks for.
+	// Empty arrays mean no extra privileges beyond logging,
+	// KV, and route/hook registration. Changing these between
+	// releases requires a version bump because installed
+	// users have consented to the old contract.
+	"capabilities": ["content:read", "content:revisions:read", "hooks.content-policy:register", "media:read", "redirects:read"],
+	"allowedHosts": [],
+	"storage": {}
+}
