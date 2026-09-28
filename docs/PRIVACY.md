@@ -25,7 +25,7 @@ ChangeWard has no network capability. It sends no telemetry, analytics or tracki
 - Secrets or credentials.
 - Copies of revisions. EmDash owns revisions; ChangeWard links to the entry.
 
-`javascript:` and `data:` URLs are stored as the scheme plus at most 40 characters, never the full payload.
+Stored link references keep only scheme, host, port and path: credentials, query strings and fragments are removed before anything is stored. `javascript:` and `data:` URLs are stored as the scheme plus at most 40 characters, never the full payload.
 
 ## Retention
 

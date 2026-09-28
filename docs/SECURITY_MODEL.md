@@ -34,7 +34,7 @@
 - Hidden state is limited to two things, and neither grants authority: the config revision in a form's `block_id`, used as a staleness token for compare-and-set; and the active filter in a table's `block_id`, re-validated against the fixed filter list.
 - Stored configuration is re-validated on every read (`normalizeConfig`).
 - Content is never rendered as HTML by ChangeWard; Block Kit renders plain text.
-- URLs are parsed with the WHATWG URL parser, with browser-equivalent control-character stripping so `java\tscript:` is recognised.
+- URLs are parsed with the WHATWG URL parser after browser-equivalent preprocessing: control characters are stripped (`java\tscript:`), HTML character references in attributes are decoded (`jav&#x61;script&colon;`), and trailing dots are removed from hosts. The markup scanner handles quoted `>` characters, `srcset`, `meta` refresh, `area`, `button`/`input` `formaction` and SVG `use`. It is a reference extractor, not a sanitizer: URLs assembled at runtime by script are out of scope.
 
 ## What is stored
 

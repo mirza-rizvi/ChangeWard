@@ -25,6 +25,7 @@ The draft EmDash is about to publish (`content.data`) is compared with the curre
 | `protected-insecure-http` | Protected resource introduces an external `http://` link | WARN |
 | `protected-embed` | Protected resource introduces a script, inline script, iframe, object, form target or inline event handler | WARN |
 | `protected-unpublish` | Protected resource is unpublished | WARN |
+| `analysis-partial` (fixed) | Content exceeded analysis limits on a protected resource, or while a blocked list exists | WARN (not configurable) |
 
 Origin rules never apply to `visual-editor`, `scheduler` or `system`. A scheduled publication was checked when it was scheduled, and its content rules are checked again when it becomes due.
 
@@ -47,7 +48,7 @@ Reasons are plain text clamped to 500 characters (EmDash's limit).
 
 ## Failure behaviour
 
-- The engine is pure; the hook wraps storage access.
+- The decision is computed from configuration, the resource record and the event **before** any state I/O. A failure while recording the decision (state, event or incident writes) is logged and never discards a BLOCK.
 - **Default (fail open):** if ChangeWard cannot read its configuration or state, it logs the error name (no content) and allows the transition. Observation must not break publishing.
 - **Fail closed (setting):** the error is rethrown. Under EmDash's documented `errorPolicy: "abort"`, the publication stops with a generic failure message. If the configuration itself cannot be read, ChangeWard cannot know this setting and fails open.
-- **Partial analysis** (content beyond processing limits): findings that were made still apply. A blocked domain beyond the scan limit cannot be detected. That event is flagged `partial`.
+- **Partial analysis** (content beyond processing limits): findings that were made still apply. Hosts past the 300-reference cap are still checked against the lists (up to 2,000). The `analysis-partial` WARN tells the administrator that some links could not be checked.
