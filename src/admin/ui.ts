@@ -30,8 +30,13 @@ export function page(active: string, title: string, blocks: Block[], toast?: Blo
 	return { blocks: [{ type: "header", text: title }, nav(active), ...blocks], ...(toast ? { toast } : {}) };
 }
 
-export function origin(e: Pick<ChangeEvent, "originSource" | "originPluginId" | "originInherited">): string {
-	const base = e.originSource === "plugin" && e.originPluginId ? `Plugin ${e.originPluginId}` : ORIGIN_LABELS[e.originSource] ?? "Unknown";
+export function origin(e: Pick<ChangeEvent, "originSource" | "originPluginId" | "originInherited" | "actorId">): string {
+	const base =
+		e.originSource === "plugin" && e.originPluginId
+			? `Plugin ${e.originPluginId}`
+			: e.originSource === "unattributed" && e.actorId
+				? "User (origin not reported)"
+				: (ORIGIN_LABELS[e.originSource] ?? "Unknown");
 	return e.originInherited ? `${base} (from policy check)` : base;
 }
 
@@ -79,6 +84,18 @@ export function incidentRow(i: Incident): Record<string, unknown> {
 		events: i.eventCount,
 		updated: i.lastEventAt,
 	};
+}
+
+/** Block Kit collapses newlines, so lists render as one context line per item. */
+export function bullets(items: string[]): Block[] {
+	return items.length ? items.map((text) => ({ type: "context" as const, text: `• ${text}` })) : [{ type: "context", text: "—" }];
+}
+
+/** `2026-09-29 06:55 UTC`: readable and unambiguous without the viewer's timezone. */
+export function utc(iso: string | undefined): string {
+	if (!iso) return "—";
+	const t = Date.parse(iso);
+	return Number.isNaN(t) ? iso : `${new Date(t).toISOString().slice(0, 16).replace("T", " ")} UTC`;
 }
 
 export function startOfDayIso(now: number): string {

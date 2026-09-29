@@ -49,12 +49,14 @@ describe("runtime contract", () => {
 		expect(h.manifest.capabilities).not.toContain("users:read");
 	});
 
-	it("records an MCP save with its real origin and actor", async () => {
+	it("records a save with the signed-in user and does not invent an origin", async () => {
 		const { h, admin } = await setup();
-		const res = await h.actions.content.create("pages", { data: { title: "Pricing", cta: "https://pay.example/x" }, slug: "pricing", actor: { id: admin.id, role: 50, source: "mcp" } } as never);
+		// A real EmDash 1.0 server passes { id, role } without a source on saves (verified on a local site).
+		const res = await h.actions.content.create("pages", { data: { title: "Pricing", cta: "https://pay.example/x" }, slug: "pricing", actor: { id: admin.id, role: 50 } } as never);
 		expect((res as { success: boolean }).success).toBe(true);
 		const [e] = await until(() => events(h), (v) => v.length > 0);
-		expect(e).toMatchObject({ action: "content.created", originSource: "mcp", actorId: admin.id, resourceTitle: "Pricing" });
+		expect(e).toMatchObject({ action: "content.created", originSource: "unattributed", actorId: admin.id, resourceTitle: "Pricing" });
+		expect(e?.summary).toContain("by a signed-in user (origin not reported)");
 		expect(e?.signals?.map((s) => s.code)).toContain("domain.new");
 	});
 

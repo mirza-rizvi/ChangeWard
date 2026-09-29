@@ -4,7 +4,7 @@ import { LIMITS } from "../core/limits";
 import { ORIGIN_LABELS } from "../events/origin";
 import { describeSignal } from "../events/recorder";
 import { shortHash } from "../integrity/hash";
-import { EVENT_COLUMNS, SEVERITY_LABEL, eventRow, origin, page, resourceText, type Block, type BlockResponse } from "./ui";
+import { EVENT_COLUMNS, SEVERITY_LABEL, bullets, eventRow, origin, page, resourceText, utc, type Block, type BlockResponse } from "./ui";
 
 /** One indexed filter at a time: every option maps to exactly one declared storage index. */
 export function filterWhere(filter: string): Where | undefined {
@@ -21,7 +21,7 @@ export function filterWhere(filter: string): Where | undefined {
 
 const FILTER_OPTIONS: Array<{ label: string; value: string }> = [
 	{ label: "All activity", value: "all" },
-	...(["mcp", "api", "plugin", "scheduler", "visual-editor", "system", "unattributed"] as const).map((s) => ({ label: `Origin: ${ORIGIN_LABELS[s]}`, value: `origin:${s}` })),
+	...(["mcp", "api", "plugin", "scheduler", "visual-editor", "system", "unattributed"] as const).map((s) => ({ label: s === "unattributed" ? "Origin not reported" : `Origin: ${ORIGIN_LABELS[s]}`, value: `origin:${s}` })),
 	{ label: "Protected resources", value: "protected" },
 	{ label: "High severity", value: "important" },
 	{ label: "Policy decisions", value: "category:policy" },
@@ -72,7 +72,7 @@ export async function activityPage(store: Store, filter = "all", cursor?: string
 
 export function eventDetail(e: ChangeEvent): Block[] {
 	const fields = [
-		{ label: "When", value: e.createdAt },
+		{ label: "When", value: utc(e.createdAt) },
 		{ label: "Action", value: e.action },
 		{ label: "Severity", value: SEVERITY_LABEL[e.severity] },
 		{ label: "Origin", value: origin(e) },
@@ -85,11 +85,11 @@ export function eventDetail(e: ChangeEvent): Block[] {
 	const blocks: Block[] = [{ type: "section", text: e.summary }, { type: "fields", fields }];
 	if (e.signals?.length) {
 		blocks.push({ type: "header", text: "Change intelligence" });
-		blocks.push({ type: "section", text: e.signals.map((s) => `• ${describeSignal(s)}`).join("\n") });
+		blocks.push(...bullets(e.signals.map((s) => describeSignal(s))));
 	}
 	if (e.policy?.length) {
 		blocks.push({ type: "header", text: "Policy results" });
-		blocks.push({ type: "section", text: e.policy.map((p) => `• ${p.rule}: ${p.result.toUpperCase()} — ${p.reason}`).join("\n") });
+		blocks.push(...bullets(e.policy.map((p) => `${p.rule}: ${p.result.toUpperCase()}. ${p.reason}`)));
 	}
 	if (e.partial) blocks.push({ type: "context", text: "Analysis was partial: the content exceeded ChangeWard's per-change processing limits." });
 	if (e.originInherited) blocks.push({ type: "context", text: "Origin taken from the publication-policy check that preceded this action." });

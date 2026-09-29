@@ -9,7 +9,7 @@ import { compareToBaseline, describeDrift, makeBaseline } from "../integrity/bas
 import { fingerprint, shortHash } from "../integrity/hash";
 import { hostOf } from "../intelligence/domains";
 import { externalHosts, extract } from "../intelligence/urls";
-import { page, type Block, type BlockResponse } from "./ui";
+import { page, utc, type Block, type BlockResponse } from "./ui";
 
 export function parseResourceKey(value: string): { collection: string; id: string } | undefined {
 	const i = value.indexOf(":");
@@ -214,7 +214,7 @@ export async function compareResource(store: Store, key: string): Promise<BlockR
 		{
 			type: "fields",
 			fields: [
-				{ label: "Baseline captured", value: r.baseline.capturedAt },
+				{ label: "Baseline captured", value: utc(r.baseline.capturedAt) },
 				{ label: "Baseline fingerprint", value: shortHash(r.baseline.hash) },
 				{ label: "Current fingerprint", value: shortHash(fp.hash) },
 				{ label: "Baseline status", value: r.baseline.status },

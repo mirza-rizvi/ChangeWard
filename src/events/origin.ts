@@ -38,8 +38,9 @@ export function attributionFromPolicy(origin: unknown, actor: unknown): Attribut
 }
 
 /**
- * From a save event's `actor`. EmDash sets `actor.source` for authenticated REST, visual-editor and
- * MCP saves; internal writes carry no actor, which is reported as unattributed, never guessed.
+ * From a save event's `actor`. EmDash 1.0 includes the acting user on authenticated saves but, as
+ * its docs state, not the request origin. `actor.source` is honoured if a future version sends it;
+ * otherwise the save is unattributed with the user kept. Never guessed.
  */
 export function attributionFromActor(actor: unknown): Attribution {
 	const fields = actorFields(actor);
@@ -54,7 +55,7 @@ export const ORIGIN_LABELS: Record<OriginSource, string> = {
 	plugin: "Plugin",
 	scheduler: "Scheduler",
 	system: "System",
-	unattributed: "Unattributed",
+	unattributed: "Origin not reported",
 	unknown: "Unknown",
 };
 
@@ -65,7 +66,7 @@ export function originLabel(a: Pick<Attribution, "source" | "pluginId" | "rawSou
 }
 
 /** Human-facing phrasing: "via MCP", "through the visual editor". Never claims AI involvement. */
-export function viaPhrase(a: Pick<Attribution, "source" | "pluginId" | "rawSource">): string {
+export function viaPhrase(a: Pick<Attribution, "source" | "pluginId" | "rawSource" | "actorId">): string {
 	switch (a.source) {
 		case "visual-editor":
 			return "through the visual editor";
@@ -76,7 +77,9 @@ export function viaPhrase(a: Pick<Attribution, "source" | "pluginId" | "rawSourc
 		case "system":
 			return "by the system";
 		case "unattributed":
-			return "(origin not reported)";
+			// EmDash reports the signed-in user on saves, but not whether the save came through
+			// the REST API, MCP or the visual editor.
+			return a.actorId ? "by a signed-in user (origin not reported)" : "(origin not reported)";
 		case "unknown":
 			return a.rawSource ? `via ${a.rawSource}` : "via an unknown origin";
 		default:

@@ -37,6 +37,10 @@ export async function overviewPage(store: Store, now = Date.now()): Promise<Bloc
 				{ label: "Open incidents", value: open, ...(open > 0 ? { trend: "up" as const } : {}) },
 			],
 		},
+		{
+			type: "context",
+			text: "EmDash reports the origin (MCP, API, visual editor, plugin, scheduler) for publish, schedule and unpublish actions. Saves carry the signed-in user but not the origin, so they show as “User (origin not reported)”.",
+		},
 		{ type: "header", text: "Open incidents" },
 		{
 			type: "table",

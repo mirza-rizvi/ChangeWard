@@ -48,7 +48,7 @@
 
 	"admin": {
 		"pages": [
-			{ "path": "/overview", "label": "Overview", "icon": "shield" },
+			{ "path": "/overview", "label": "ChangeWard", "icon": "shield" },
 			{ "path": "/activity", "label": "Activity", "icon": "list" },
 			{ "path": "/incidents", "label": "Incidents", "icon": "alert" },
 			{ "path": "/protected", "label": "Protected", "icon": "lock" },

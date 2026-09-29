@@ -3,7 +3,7 @@ import type { Store } from "../core/store";
 import { INCIDENT_STATUSES, type ChangeEvent, type Incident, type IncidentStatus } from "../core/types";
 import { ORIGIN_LABELS } from "../events/origin";
 import { commitState } from "../events/pipeline";
-import { EVENT_COLUMNS, INCIDENT_COLUMNS, SEVERITY_LABEL, eventRow, incidentRow, page, type Block, type BlockResponse } from "./ui";
+import { EVENT_COLUMNS, INCIDENT_COLUMNS, SEVERITY_LABEL, bullets, eventRow, utc, incidentRow, page, type Block, type BlockResponse } from "./ui";
 
 /** Allowed manual transitions. Changing status only affects ChangeWard's records, never content. */
 export const TRANSITIONS: Record<IncidentStatus, readonly IncidentStatus[]> = {
@@ -78,9 +78,9 @@ export async function incidentDetail(store: Store, id: string, toast?: BlockResp
 			fields: [
 				{ label: "Incident", value: incident.id },
 				{ label: "Severity", value: SEVERITY_LABEL[incident.severity] },
-				{ label: "Status", value: incident.status },
-				{ label: "Opened", value: incident.createdAt },
-				{ label: "Last activity", value: incident.lastEventAt },
+				{ label: "Status", value: incident.status[0]?.toUpperCase() + incident.status.slice(1) },
+				{ label: "Opened", value: utc(incident.createdAt) },
+				{ label: "Last activity", value: utc(incident.lastEventAt) },
 				{ label: "Events", value: String(incident.eventCount) },
 				{ label: "Origins", value: incident.originSources.map((s) => ORIGIN_LABELS[s] ?? s).join(", ") || "—" },
 				{ label: "Actors", value: incident.actorIds.join(", ") || "Not reported" },
@@ -90,7 +90,7 @@ export async function incidentDetail(store: Store, id: string, toast?: BlockResp
 			],
 		},
 		{ type: "header", text: "Why these events are grouped" },
-		{ type: "section", text: incident.reasons.map((r) => `• ${r}`).join("\n") || "—" },
+		...bullets(incident.reasons),
 		{ type: "header", text: "Timeline" },
 		{
 			type: "table",
