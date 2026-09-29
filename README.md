@@ -1,5 +1,7 @@
 # ChangeWard
 
+[![CI](https://github.com/mirza-rizvi/ChangeWard/actions/workflows/ci.yml/badge.svg)](https://github.com/mirza-rizvi/ChangeWard/actions/workflows/ci.yml)
+
 **Know what changed. Know who changed it.**
 
 ChangeWard helps EmDash administrators understand and govern important CMS changes. It records where changes came from, monitors protected content, applies publishing policies, surfaces MCP and automation activity, and groups related events into incident timelines.

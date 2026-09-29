@@ -1,0 +1,46 @@
+name: False positive or misleading wording
+description: ChangeWard flagged something harmless, rated it too high, or described it in a way that overstates the risk.
+labels: [false-positive]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ChangeWard aims to report observations ("external script reference introduced"), not verdicts. If a signal, severity, policy result or incident grouping was wrong or overstated, tell us.
+        Please describe the content in general terms. Do not paste private content.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What was wrong
+      options:
+        - A signal that should not have fired (e.g. new domain, script reference)
+        - Severity too high
+        - A publication was blocked or warned unnecessarily
+        - Unrelated changes grouped into one incident
+        - Unusual change volume flagged for normal activity
+        - Wording overstates the risk
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: event
+    attributes:
+      label: The event or incident
+      description: The summary line, signal codes, rule ID or incident reasons shown in ChangeWard.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: input
+    id: origin
+    attributes:
+      label: Origin shown
+      placeholder: "MCP / API / Visual editor / Plugin / Scheduler / Unattributed"
+  - type: input
+    id: changeward-version
+    attributes:
+      label: ChangeWard version
+      placeholder: "0.1.0"

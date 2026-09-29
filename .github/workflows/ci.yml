@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Typecheck, test, bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Validate manifest and run tests
+        run: pnpm test
+
+      - name: Build registry bundle (enforces size and file limits)
+        run: pnpm run bundle
+
+      - name: Check for Node built-in imports in the sandbox bundle
+        run: |
+          if grep -nE "from ['\"](node:|fs|path|child_process|os|net)['\"]" dist/plugin.mjs; then
+            echo "Sandbox bundle must not import Node built-ins" >&2
+            exit 1
+          fi

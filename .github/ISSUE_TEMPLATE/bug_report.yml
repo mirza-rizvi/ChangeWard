@@ -1,0 +1,56 @@
+name: Bug report
+description: ChangeWard did something wrong or crashed.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. **Do not report security vulnerabilities here.** Use the private process in SECURITY.md.
+        Please do not paste private content, user emails or secrets.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Protect an entry
+        2. Publish it through MCP
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: changeward-version
+    attributes:
+      label: ChangeWard version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: emdash-version
+    attributes:
+      label: EmDash version
+      placeholder: "1.0.1"
+    validations:
+      required: true
+  - type: dropdown
+    id: runner
+    attributes:
+      label: Sandbox runner
+      options:
+        - Cloudflare (Worker Loader)
+        - Node / workerd
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log lines
+      description: EmDash logs mentioning ChangeWard (error names only, no content).
+      render: text
