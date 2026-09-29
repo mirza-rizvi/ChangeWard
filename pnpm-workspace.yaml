@@ -19,3 +19,8 @@ minimumReleaseAgeExclude:
   - '@emdash-cms/registry-lexicons@0.7.0'
   - '@emdash-cms/registry-verification@0.3.3'
   - emdash@1.0.1
+
+# Security: miniflare (EmDash test tooling) pins an undici 7.x release with known advisories.
+# Dev/test only; never part of the shipped plugin.
+overrides:
+  'undici@>=7.0.0 <7.29.1': 7.30.0
