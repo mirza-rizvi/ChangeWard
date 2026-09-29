@@ -4,7 +4,7 @@
 
 ChangeWard helps EmDash administrators understand and govern important CMS changes. It records where changes came from, monitors protected content, applies publishing policies, surfaces MCP and automation activity, and groups related events into incident timelines.
 
-ChangeWard complements Cloudflare security products. It does not provide a WAF, DDoS protection, bot mitigation, authentication, or network-level MCP security. Its layer is **application-level change provenance**: what state changed inside EmDash, through which origin, and whether that transition breaks your publishing rules. See [docs/CLOUDFLARE_BOUNDARY.md](docs/CLOUDFLARE_BOUNDARY.md).
+ChangeWard complements Cloudflare security products. It does not provide a WAF, DDoS protection, bot mitigation, authentication, or network-level MCP security. Its layer is **application-level change provenance**: what state changed inside EmDash, through which origin, and whether that transition breaks your publishing rules.
 
 Author: [Rizvi](https://github.com/mirza-rizvi) · License: MIT · Version 0.1.0 (sandboxed EmDash plugin, EmDash ≥ 1.0)
 
@@ -45,13 +45,8 @@ To try it in a local site: run `pnpm run dev` here, `pnpm add file:../path/to/ch
 
 | | |
 | --- | --- |
-| [ARCHITECTURE](docs/ARCHITECTURE.md) | Layers, event and publication flows, key decisions |
-| [EMDASH_RESEARCH](docs/EMDASH_RESEARCH.md) | Verified EmDash 1.0.1 APIs, limits, and where the original brief did not match |
-| [EMDASH_HOOK_MAP](docs/EMDASH_HOOK_MAP.md) | Every hook: capability, fields, effect, error policy, budget |
-| [CLOUDFLARE_BOUNDARY](docs/CLOUDFLARE_BOUNDARY.md) | What Cloudflare owns and ChangeWard does not build |
 | [SECURITY_MODEL](docs/SECURITY_MODEL.md) | What is and is not protected, trust assumptions, failure modes |
 | [CAPABILITIES](docs/CAPABILITIES.md) · [PRIVACY](docs/PRIVACY.md) · [DATA_MODEL](docs/DATA_MODEL.md) | What is requested, stored and kept |
 | [POLICY_ENGINE](docs/POLICY_ENGINE.md) · [INCIDENT_MODEL](docs/INCIDENT_MODEL.md) | Rules, severity table, correlation |
-| [PERFORMANCE](docs/PERFORMANCE.md) · [TESTING](docs/TESTING.md) · [DEVELOPMENT](docs/DEVELOPMENT.md) · [PUBLISHING](docs/PUBLISHING.md) | Engineering |
 
 Security reports: see [SECURITY.md](SECURITY.md).

@@ -15,6 +15,14 @@
 		"publishing policies",
 		"protected content"
 	],
+	"homepage": "https://github.com/mirza-rizvi/ChangeWard#readme",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/mirza-rizvi/ChangeWard.git"
+	},
+	"bugs": {
+		"url": "https://github.com/mirza-rizvi/ChangeWard/issues"
+	},
 	"private": true,
 	"type": "module",
 	"packageManager": "pnpm@11.7.0",

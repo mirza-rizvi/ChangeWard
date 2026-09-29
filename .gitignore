@@ -1,2 +1,36 @@
+# Dependencies and build output
 node_modules/
 dist/
+*.tgz
+*.tar.gz
+coverage/
+.vitest/
+*.tsbuildinfo
+
+# Logs and local environment
+*.log
+npm-debug.log*
+pnpm-debug.log*
+.env
+.env.*
+!.env.example
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# AI agent files (local only)
+AGENTS.md
+CLAUDE.md
+.claude/
+.agents/
+.cursor/
+.codex/
+.gemini/
+skills/
+
+# Internal development docs (local only)
+docs/dev/

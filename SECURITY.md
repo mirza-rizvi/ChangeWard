@@ -2,9 +2,7 @@
 
 ## Reporting a vulnerability
 
-Please report suspected vulnerabilities in ChangeWard privately to the security contact listed in `emdash-plugin.jsonc` (`security.email`). Do not open public issues for vulnerabilities.
-
-> Placeholder: the published security address will replace `security@example.invalid` before the first registry release.
+Please report suspected vulnerabilities privately through GitHub: [Report a vulnerability](https://github.com/mirza-rizvi/ChangeWard/security/advisories/new). This is the `security.url` contact in `emdash-plugin.jsonc`. Do not open public issues for vulnerabilities.
 
 Include the ChangeWard version, the EmDash version, the runner (Cloudflare or Node/workerd), and steps to reproduce.
 

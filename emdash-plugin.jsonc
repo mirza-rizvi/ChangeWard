@@ -7,9 +7,10 @@
 
 	"license": "MIT",
 	"author": { "name": "Rizvi", "url": "https://github.com/mirza-rizvi" },
-	// PLACEHOLDER: replace with your real security contact before publishing.
-	"security": { "email": "security@example.invalid" },
+	// Private vulnerability reports go through GitHub security advisories.
+	"security": { "url": "https://github.com/mirza-rizvi/ChangeWard/security/advisories/new" },
 	"description": "Change intelligence, protected-content monitoring, publishing policies, and MCP activity visibility for EmDash.",
+	"repo": "https://github.com/mirza-rizvi/ChangeWard",
 
 	// Trust contract. Every entry is justified in docs/CAPABILITIES.md.
 	// Adding a capability in a later release requires administrators to approve it again.
