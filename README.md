@@ -14,13 +14,38 @@ Author: [Rizvi](https://github.com/mirza-rizvi) · License: MIT · Version 0.1.0
 
 | Pillar | What you get |
 | --- | --- |
-| **Change intelligence** | Every create, update, publish, unpublish, schedule, trash, delete and restore is recorded with its EmDash origin (MCP, API, visual editor, plugin, scheduler, system) and actor. Each change is diffed for security-relevant properties: new external domains, changed link destinations, `http://`, `javascript:` and `data:` URLs, script, iframe and form references, embed blocks, bursts of links. It also fingerprints content with SHA-256 |
+| **Change intelligence** | Every create, update, publish, unpublish, schedule, trash, delete and restore is recorded with the attribution EmDash provides: the origin (MCP, API, visual editor, plugin, scheduler, system) for publish, schedule and unpublish, and the signed-in user for saves. Each change is diffed for security-relevant properties: new external domains, changed link destinations, `http://`, `javascript:` and `data:` URLs, script, iframe and form references, embed blocks, bursts of links. It also fingerprints content with SHA-256 |
 | **Protected content** | Mark Pricing, Legal, Downloads and similar pages as protected: raised severity, a known good state (baseline), and drift reports |
 | **MCP & automation activity** | MCP changes today, recent MCP activity, per-origin filters. MCP is labelled MCP, never "AI" |
 | **Publishing policies** | Nine rules (blocked domains, dangerous schemes, protected content via MCP/API/plugin, unknown domains, insecure links, embeds, unpublish), each ALLOW / WARN / BLOCK. BLOCK uses EmDash's native publication-policy hook and explains itself. Saving drafts is never blocked |
 | **Incident trail** | Unusual change volume per origin and actor. Related changes are correlated into incidents (same resource, same actor, shared domain) with stated reasons, deterministic severity and an open → investigating → resolved/ignored workflow |
 
 Also: redirect changes observed every 15 minutes, lightweight media observations (SVG, HTML, executables, double extensions), optional email digests, configurable retention, an entry-editor panel, and dashboard widgets. ChangeWard's own configuration changes are recorded too.
+
+## Screenshots
+
+Captured from a local EmDash 1.0.1 site (Node + workerd sandbox). An MCP client changed the protected Pricing page's checkout link to a blocked domain, then tried to publish it.
+
+**Overview:** operational numbers, open incidents, important changes and MCP activity.
+
+![ChangeWard overview](docs/images/overview.png)
+
+**Blocked publication:** EmDash's own editor shows ChangeWard's explanation when a publish is refused.
+
+![Publish rejected with ChangeWard's reason](docs/images/blocked-publish.png)
+
+**Incident:** related changes grouped, with the reasons they were grouped and a timeline.
+
+![Incident detail](docs/images/incident-detail.png)
+
+<details>
+<summary>Activity, Protected content and Policies</summary>
+
+![Activity log](docs/images/activity.png)
+![Protected content](docs/images/protected.png)
+![Publishing policies](docs/images/policies.png)
+
+</details>
 
 ## Trust
 
