@@ -7,6 +7,26 @@ coverage/
 .vitest/
 *.tsbuildinfo
 
+# Local EmDash / Wrangler / Astro dev state
+.wrangler/
+.dev.vars*
+.astro/
+.emdash/
+uploads/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+
+# Test and browser-automation output
+test-results/
+playwright-report/
+.cache/
+
+# Git bundles and archives
+*.bundle
+*.zip
+
 # Logs and local environment
 *.log
 npm-debug.log*
