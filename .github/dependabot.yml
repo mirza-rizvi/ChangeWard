@@ -1,0 +1,24 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      dev-tooling:
+        patterns: ["typescript", "vitest"]
+    ignore:
+      # EmDash registry lexicons are experimental (com.emdashcms.experimental.*).
+      # The EmDash toolchain is pinned exactly and upgraded by hand after re-running
+      # the sandbox runtime tests and the registry bundle check.
+      - dependency-name: "emdash"
+      - dependency-name: "@emdash-cms/*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
