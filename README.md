@@ -2,47 +2,50 @@
 
 [![CI](https://github.com/mirza-rizvi/ChangeWard/actions/workflows/ci.yml/badge.svg)](https://github.com/mirza-rizvi/ChangeWard/actions/workflows/ci.yml)
 
-**Know what changed on your website. Know who changed it.**
+ChangeWard is a plugin for the [EmDash](https://github.com/emdash-cms/emdash) website builder. It records changes to your site's content, lets you mark important pages for closer monitoring, and can stop a page from being published when it breaks a rule you set.
 
-Your website is no longer edited only by people. Editors, AI assistants, apps connected through an API, other plugins and scheduled jobs can all change your pages. When your pricing page suddenly links somewhere new, you need to know what happened, who or what did it, and whether it should go live.
-
-ChangeWard is a free plugin for the [EmDash](https://github.com/emdash-cms/emdash) website builder. It keeps a clear, readable history of important changes. It watches the pages you care about most, and it can stop risky changes from being published, with a plain explanation of why.
+Changes to an EmDash site can come from editors, AI assistants connected over MCP, apps using the API, other plugins and scheduled jobs. ChangeWard shows which of these made each change, as far as EmDash reports it.
 
 ![ChangeWard overview](docs/images/overview.png)
 
----
+## Features
 
-## What it does for you
+### Change history
 
-**📋 A readable history of changes**
-Every edit, publish, unpublish, schedule and delete is written down in plain language: *"Pricing" published via MCP* or *"Downloads" updated; new external link to pay.example.net*. You can filter by where the change came from, and see at a glance what matters.
+ChangeWard logs every create, edit, publish, unpublish, schedule, delete and restore. Each entry is a short sentence, for example `"Downloads" updated; new external link (pay.example.net)`. You can filter the list by where changes came from, by protected pages, or by severity.
 
-**🛡️ Extra care for your most important pages**
-Mark pages like Pricing, Checkout, Downloads or Legal as **protected**. ChangeWard remembers how each one looked when it was right (its *known good state*), and tells you when it drifts away from that.
+### Protected pages
 
-**✋ Stop risky changes before visitors see them**
-Set simple rules, and ChangeWard checks them every time something is about to go live. For example:
-- Never publish a link to a website on my blocked list.
-- Don't let AI assistants or automated tools publish my protected pages.
-- Warn me when a protected page adds a link to a website I haven't approved.
+You can mark pages such as Pricing, Checkout or Legal as protected. When you do, ChangeWard saves a fingerprint of the page as it is now. Later changes to a protected page are logged with higher severity, and ChangeWard tells you when the page no longer matches the saved version.
 
-When a rule stops a publish, the person or tool sees exactly why. Drafts can always be saved; rules only apply when something goes live.
+### Publishing rules
 
-![A blocked publish, with ChangeWard's explanation](docs/images/blocked-publish.png)
+ChangeWard checks your rules each time a page is published, scheduled or unpublished. Each rule can be set to allow, warn or block. Examples:
 
-**🔎 Related changes grouped into one story**
-When several changes are connected (the same page, the same person or tool, the same new link) ChangeWard groups them into an **incident**. It shows a timeline and a plain explanation of why the changes were grouped. It also notices unusual bursts, such as fifty edits in a minute.
+- Block publishing when a page links to a website on your blocked list.
+- Block publishing of protected pages when the request comes over MCP.
+- Warn when a protected page adds a link to a website you haven't marked as trusted.
+
+When a rule blocks a publish, EmDash shows the reason to whoever tried to publish. Saving drafts is never blocked.
+
+![A blocked publish showing ChangeWard's reason](docs/images/blocked-publish.png)
+
+### Incidents
+
+Changes that are related, such as edits to the same page, by the same user or tool, or adding the same new website, are grouped into an incident. Each incident lists its timeline and the reasons its changes were grouped. ChangeWard also flags unusually fast bursts of changes from one source.
 
 ![An incident with its timeline](docs/images/incident-detail.png)
 
-**🤖 See what automated tools are doing**
-A dedicated view shows what came in through **MCP**, the connection AI assistants and other tools use to work with your site. It's labelled honestly as "MCP", because the tool on the other end could be an AI, a script or another app.
+### MCP activity
 
-**📧 Optional email alerts**
-Get a short summary email when something serious happens. It's off by default, and sent at most once per cooldown period, so your inbox doesn't flood.
+MCP is the connection AI assistants and other tools use to work with an EmDash site. The overview lists recent changes that came in over MCP. ChangeWard labels these "MCP" rather than "AI", because the client could also be a script or another app.
+
+### Email alerts
+
+ChangeWard can send an email summary when an incident reaches a severity you choose. Alerts are off by default and are sent at most once per cooldown period.
 
 <details>
-<summary><b>More screenshots</b>: activity history, protected pages, rules</summary>
+<summary>More screenshots: activity, protected pages, rules</summary>
 
 ![Activity history](docs/images/activity.png)
 ![Protected pages](docs/images/protected.png)
@@ -50,97 +53,86 @@ Get a short summary email when something serious happens. It's off by default, a
 
 </details>
 
----
+## Privacy and access
 
-## Built to be trusted
+- ChangeWard has no internet access. It sends no analytics or tracking data and needs no account. The only outgoing messages are the optional alert emails, sent through your site's own email setup.
+- It can read content and check publishing requests. It cannot edit, publish or delete content.
+- It stores short summaries, fingerprints and website names. It does not store the text of your pages.
+- Findings are worded as descriptions of the change, for example "new link to an unknown website", and do not claim intent.
+- If ChangeWard hits an error, publishing continues as normal. You can change this in Policies if you prefer publishing to stop instead.
 
-- **Your content stays on your site.** ChangeWard has no internet access at all. No tracking, no analytics, no accounts, no "phone home". The only thing it can send is the optional alert email, through your own site's email setup.
-- **It asks for as little access as possible.** It can read your content and check publishing, but it **cannot edit, publish or delete anything**.
-- **It keeps notes, not copies.** It stores short summaries, fingerprints and website names, not your page text.
-- **It tells you what it saw, not scary guesses.** You'll read "new link to an unknown website, review recommended", never "hacker detected". It describes changes; you decide what they mean.
-- **It never gets in the way of editing.** If ChangeWard ever has a problem, your site keeps working and publishing continues normally, unless you've chosen stricter behaviour.
-
-## What it doesn't do
-
-ChangeWard focuses on **changes inside your website**. It works alongside security services like Cloudflare, not instead of them. It is **not**:
-
-- a firewall, spam filter or bot blocker;
-- a login or password system;
-- a virus or malware scanner.
-
----
+ChangeWard only looks at changes inside your site. It is not a firewall, bot blocker, login system or malware scanner, and it is meant to be used alongside services such as Cloudflare.
 
 ## Getting started
 
-> **Status: early release (0.1.0).** ChangeWard works and is tested on a real EmDash site, but it isn't in the EmDash plugin directory yet.
+ChangeWard is at version 0.1.0 and is not yet listed in the EmDash plugin directory. It has been tested on a local EmDash 1.0.1 site.
 
-**Once it's listed:** open your EmDash admin, go to **Registry**, find **ChangeWard**, and click **Install**. EmDash will show you exactly what it's allowed to access before you approve.
+Once it is listed, install it from **Registry** in the EmDash admin. EmDash shows the access ChangeWard asks for before you approve it.
 
-**After installing:**
-1. Open **ChangeWard** from the admin sidebar.
-2. Go to **Protected** and add the pages that matter most, such as Pricing. Keep "capture the current state as known good" switched on.
-3. Go to **Policies**, add any websites you trust or want blocked, and choose ALLOW, WARN or BLOCK for each rule.
-4. Optional: in **Settings**, turn on email alerts.
+After installing:
 
-## Common questions
+1. Open **ChangeWard** in the admin sidebar.
+2. Under **Protected**, add the pages that matter most. Leave "Capture the current state as known good" switched on.
+3. Under **Policies**, list any trusted or blocked websites and set each rule to allow, warn or block.
+4. Optionally, turn on email alerts under **Settings**.
 
-**Will it block my editors from saving work?**
-No. Saving drafts is never blocked. Rules only apply at the moment something is published, scheduled or unpublished.
+## Questions
+
+**Does it stop editors from saving?**
+No. Rules only run when something is published, scheduled or unpublished.
 
 **Can it tell which AI made a change?**
-It tells you what EmDash reports. For publishing it shows the route, such as MCP (used by AI assistants and other tools), the API, the visual editor, a plugin or the scheduler. For ordinary edits, EmDash only reports which signed-in user made the change, so ChangeWard shows that and doesn't guess.
+Only as far as EmDash reports it. For publishing, EmDash reports the route: MCP, the API, the visual editor, a plugin or the scheduler. For ordinary edits, EmDash reports only the signed-in user, so that is what ChangeWard shows.
 
-**Does it slow down my site?**
-No. It only does small, bounded work when content changes. It never scans your whole site, and it doesn't touch what visitors load.
+**Does it slow the site down?**
+It runs a small, limited amount of work when content changes. It does not scan the whole site and does not affect pages visitors load.
 
-**What if I set a rule too strictly?**
-Switch Policies to **Monitor only**. Every BLOCK then becomes a warning, so nothing is stopped while you fine-tune. Changes to ChangeWard's own settings are recorded too, so you can always see who loosened a rule.
+**What if a rule is too strict?**
+Set Policies to **Monitor only**. Blocking rules then warn instead. Changes to ChangeWard's own settings are also logged, including who made them.
 
 **How long is history kept?**
 30 days by default. You can choose 7, 30, 90 or 180 days in Settings.
 
-## Words you'll see
+## Terms
 
 | Term | Meaning |
 | --- | --- |
-| **EmDash** | The open-source website builder (CMS) that ChangeWard plugs into |
-| **MCP** | A standard way for AI assistants and other tools to connect to your site and make changes |
-| **Origin** | The route a change came through: MCP, API, visual editor, a plugin, the scheduler |
-| **Protected page** | A page you've marked for extra monitoring and stricter rules |
-| **Known good state** | A saved fingerprint of how a protected page looked when it was right |
-| **Policy / rule** | A check that runs before something goes live: allow, warn or block |
-| **Incident** | A group of related changes worth reviewing together |
-
----
+| EmDash | The open-source website builder ChangeWard runs in |
+| MCP | A standard way for AI assistants and other tools to connect to a site |
+| Origin | The route a change came through: MCP, API, visual editor, plugin or scheduler |
+| Protected page | A page you have marked for closer monitoring and stricter rules |
+| Known good state | The saved fingerprint of a protected page |
+| Rule | A check run before content is published: allow, warn or block |
+| Incident | A group of related changes to review together |
 
 ## For developers
 
 <details>
-<summary>Technical details, permissions and build commands</summary>
+<summary>Permissions, build commands and technical documents</summary>
 
-ChangeWard is a sandboxed EmDash plugin (EmDash ≥ 1.0). Its admin UI is built with Block Kit, and it has no runtime dependencies.
+ChangeWard is a sandboxed EmDash plugin (EmDash 1.0 or later). The admin screens use Block Kit, and there are no runtime dependencies.
 
-**Capabilities requested:** `content:read`, `hooks.content-policy:register`, `redirects:read`, `media:read`, `email:send`. No `content:write`, no `network:request`. Rationale: [docs/CAPABILITIES.md](docs/CAPABILITIES.md).
+Requested capabilities: `content:read`, `hooks.content-policy:register`, `redirects:read`, `media:read`, `email:send`. It does not request `content:write` or network access. The reasons are in [docs/CAPABILITIES.md](docs/CAPABILITIES.md).
 
 ```sh
 pnpm install
 pnpm run typecheck
 pnpm test            # manifest validation, unit tests, sandbox runtime tests
-pnpm run bundle      # registry tarball; enforces bundle size and file limits
+pnpm run bundle      # registry tarball; checks bundle size and file limits
 ```
 
-Try it on a local site: run `pnpm run dev` here, then `pnpm add file:../path/to/ChangeWard` in the site, then add it with `emdash({ sandboxed: [changeward], sandboxRunner: "@emdash-cms/sandbox-workerd/sandbox" })`.
+To try it on a local site, run `pnpm run dev` here and `pnpm add file:../path/to/ChangeWard` in the site. Then add it to the site config with `emdash({ sandboxed: [changeward], sandboxRunner: "@emdash-cms/sandbox-workerd/sandbox" })`.
 
-| Document | Covers |
+| Document | Contents |
 | --- | --- |
-| [Security model](docs/SECURITY_MODEL.md) | What is and isn't protected, trust assumptions, failure behaviour |
-| [Capabilities](docs/CAPABILITIES.md) · [Privacy](docs/PRIVACY.md) · [Data model](docs/DATA_MODEL.md) | Access requested, data stored, retention |
-| [Policy engine](docs/POLICY_ENGINE.md) · [Incident model](docs/INCIDENT_MODEL.md) | Rules, severity table, grouping logic |
+| [Security model](docs/SECURITY_MODEL.md) | What is and isn't covered, assumptions, failure behaviour |
+| [Capabilities](docs/CAPABILITIES.md), [Privacy](docs/PRIVACY.md), [Data model](docs/DATA_MODEL.md) | Access requested, data stored, retention |
+| [Policy engine](docs/POLICY_ENGINE.md), [Incident model](docs/INCIDENT_MODEL.md) | Rules, severity, grouping |
 
 </details>
 
 ## Security and license
 
-Found a security problem? Please report it privately. See [SECURITY.md](SECURITY.md).
+To report a security problem, follow [SECURITY.md](SECURITY.md).
 
-MIT License © 2026 [Rizvi](https://github.com/mirza-rizvi) · [Changelog](CHANGELOG.md)
+MIT License, © 2026 [Rizvi](https://github.com/mirza-rizvi). See the [changelog](CHANGELOG.md).

@@ -9,7 +9,7 @@
 	"author": { "name": "Rizvi", "url": "https://github.com/mirza-rizvi" },
 	// Private vulnerability reports go through GitHub security advisories.
 	"security": { "url": "https://github.com/mirza-rizvi/ChangeWard/security/advisories/new" },
-	"description": "See who changed what on your EmDash website, watch your most important pages, and stop risky changes before they go live.",
+	"description": "Logs content changes on an EmDash site, monitors pages you mark as protected, and can block publishing that breaks your rules.",
 	"repo": "https://github.com/mirza-rizvi/ChangeWard",
 
 	// Trust contract. Every entry is justified in docs/CAPABILITIES.md.

@@ -1,7 +1,5 @@
 # Privacy
 
-**Your content stays in your CMS.**
-
 ChangeWard has no network capability. It sends no telemetry, analytics or tracking, needs no activation or licence server, and uses no remote threat intelligence. The only outbound path is optional email alerts, delivered by the email provider you configured in EmDash.
 
 ## Stored

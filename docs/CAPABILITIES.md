@@ -1,6 +1,6 @@
 # Capabilities
 
-Least privilege is a product feature. ChangeWard requests five capabilities and **no network access** (`allowedHosts: []`).
+ChangeWard requests five capabilities and no network access (`allowedHosts: []`).
 
 | Capability | Feature requiring it | Data exposed to ChangeWard | Why needed | Can be removed? |
 | --- | --- | --- | --- | --- |

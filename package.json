@@ -1,7 +1,7 @@
 {
 	"name": "changeward",
 	"version": "0.1.0",
-	"description": "See who changed what on your EmDash website, watch your most important pages, and stop risky changes before they go live.",
+	"description": "Logs content changes on an EmDash site, monitors pages you mark as protected, and can block publishing that breaks your rules.",
 	"license": "MIT",
 	"author": "Rizvi",
 	"keywords": [
