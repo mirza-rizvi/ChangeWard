@@ -1,7 +1,7 @@
 {
 	"name": "changeward",
 	"version": "0.1.0",
-	"description": "Know what changed, who changed it, and how it happened. Change monitoring and publishing protection for EmDash.",
+	"description": "See who changed what on your EmDash website, watch your most important pages, and stop risky changes before they go live.",
 	"license": "MIT",
 	"author": "Rizvi",
 	"keywords": [
