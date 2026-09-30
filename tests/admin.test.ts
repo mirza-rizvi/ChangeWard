@@ -5,7 +5,7 @@ import { parseInteraction, resolveTarget } from "../src/admin/interaction";
 import { canTransition } from "../src/admin/incidents";
 import { defaultConfig, normalizeConfig } from "../src/core/config";
 import { Store } from "../src/core/store";
-import type { BlockResponse } from "../src/admin/ui";
+import { startOfDayIso, type BlockResponse } from "../src/admin/ui";
 import type { ChangeEvent, Incident, ResourceState } from "../src/core/types";
 import { recordContentChange } from "../src/events/recorder";
 import { fakeHost, type FakeHost } from "./support/fake-host";
@@ -32,8 +32,10 @@ beforeEach(async () => {
 	host = fakeHost();
 	await host.settings.set("config", defaultConfig());
 	host.content.items.set("pages:p1", { id: "p1", slug: "pricing", status: "published", data: { title: "Pricing", cta: "https://pay.example/buy" } });
+	// Seed at the start of the current UTC day so "today" counts are stable whenever the test runs.
+	const startOfToday = Date.parse(startOfDayIso(Date.now()));
 	for (let i = 0; i < 30; i += 1) {
-		await recordContentChange(new Store(host), { action: "create", collection: "pages", resourceId: `d${i}`, content: { id: `d${i}`, slug: `d${i}`, status: "draft", data: { title: `Doc ${i}` } }, attribution: { source: i % 2 ? "mcp" : "api", actorId: `u${i}` } }, Date.parse("2026-09-29T10:00:00Z") + i * 5000);
+		await recordContentChange(new Store(host), { action: "create", collection: "pages", resourceId: `d${i}`, content: { id: `d${i}`, slug: `d${i}`, status: "draft", data: { title: `Doc ${i}` } }, attribution: { source: i % 2 ? "mcp" : "api", actorId: `u${i}` } }, startOfToday + i * 5000);
 	}
 });
 

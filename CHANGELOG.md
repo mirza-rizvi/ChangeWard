@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.1.0] - Unreleased
+## [0.1.0] - 2026-09-30
 
 First version of ChangeWard as a sandboxed EmDash plugin.
 
