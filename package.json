@@ -58,6 +58,6 @@
 		"@emdash-cms/plugin-test": "0.2.6",
 		"emdash": "1.0.1",
 		"typescript": "^5.9.0",
-		"vitest": "^4.1.0"
+		"vitest": "^4.1.12"
 	}
 }
